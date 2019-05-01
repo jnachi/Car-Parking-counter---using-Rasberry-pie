@@ -1,0 +1,39 @@
+import RPi.GPIO as IO
+from time import sleep
+
+from firebase import firebase
+firebase = firebase.FirebaseApplication('https://micro-2bc28.firebaseio.com/', None)
+
+IO.setmode (IO.BOARD)
+
+IO.setup(11,IO.IN)
+IO.setup(13,IO.IN)
+
+count = 0
+inIR = IO.input(11);
+outIR = IO.input(13);
+
+def callback1(channel):
+	global count  
+	if IO.input(11): 
+		count=count+1
+		data =  {'number':count} 
+		result = firebase.post('/', count)
+		
+
+def callback2(channel):  
+	global count
+	if IO.input(13):
+		count=count-1
+		data =  {'number':count}  
+		result = firebase.post('/', count)
+		
+IO.add_event_detect(11, IO.BOTH, callback=callback1)
+IO.add_event_detect(13, IO.BOTH, callback=callback2)
+
+try:
+	print("Program started")
+	sleep(100)
+finally:
+	IO.cleanup()
+	
